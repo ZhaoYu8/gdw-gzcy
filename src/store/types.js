@@ -1,0 +1,6 @@
+export default {
+  SET_COMMON: 'SET_COMMON',
+  SET_CUST: 'SET_CUST',
+  SET_LOCATION: 'SET_LOCATION',
+  SET_FILTER: 'SET_FILTER',
+};
