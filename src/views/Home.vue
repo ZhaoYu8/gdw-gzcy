@@ -10,7 +10,19 @@
           </el-col>
           <el-col span="6">
             <el-form-item label="日期：" class="form-item">
-              <el-date-picker v-model="date" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期"> </el-date-picker>
+              <a-range-picker
+                class="form-item"
+                v-model="date"
+                range-separator="至"
+                :placeholder="['开始日期', '结束日期']"
+                @change="query"
+                :locale="{
+                  lang: {
+                    yearFormat: 'YYYY年',
+                  },
+                }"
+              >
+              </a-range-picker>
             </el-form-item>
           </el-col>
         </el-form>
