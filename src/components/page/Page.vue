@@ -47,7 +47,7 @@ export default {
     selectClass: {
       // class
       type: String,
-      default: 'width-200',
+      default: 'W-240',
     },
     size: {
       // 大小

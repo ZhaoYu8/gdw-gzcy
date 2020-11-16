@@ -37,6 +37,9 @@ li {
 .w-60 {
   width: 60%;
 }
+.w-100 {
+  width: 100%;
+}
 .W-60 {
   width: 60px;
 }
@@ -46,9 +49,10 @@ li {
 .W-80 {
   width: 80px;
 }
-.w-100 {
-  width: 100%;
+.W-240 {
+  width: 240px;
 }
+
 // #region flex布局
 .d-f {
   display: flex;
@@ -208,9 +212,6 @@ body {
   }
   .el-form-item__content {
     width: 100%;
-    .el-select {
-      width: 100%;
-    }
     .el-date-editor--daterange,
     .el-date-editor--date {
       width: 100%;

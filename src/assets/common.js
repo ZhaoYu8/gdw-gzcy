@@ -1,17 +1,17 @@
 import { Notification } from 'element-ui';
 let obj = {
   tableHeader: [
-    { label: '编号', width: 5 },
-    { label: '单据编号', width: 5 },
-    { label: '业务日期', width: 5 },
-    { label: '货品名称', width: 23 },
-    { label: '规格', width: 22 },
-    { label: '单位', width: 5 },
-    { label: '数量', width: 5 },
-    { label: '单价', width: 5 },
-    { label: '金额', width: 5 },
-    { label: '图片', width: 5 },
-    { label: '备注', width: 20 },
+    { title: '编号', _width: 5, key: 'index' },
+    { title: '单据编号', _width: 5, key: 'order_serial' },
+    { title: '业务日期', _width: 5, key: 'billing_date' },
+    { title: '货品名称', _width: 23, key: 'product_name' },
+    { title: '规格', _width: 22, key: 'product_field' },
+    { title: '单位', _width: 5, key: 'product_unit' },
+    { title: '数量', _width: 5, key: 'product_num' },
+    { title: '单价', _width: 5, key: 'product_price' },
+    { title: '金额', _width: 5, key: 'product_amount' },
+    { title: '图片', _width: 5, key: 'product_img', type: 'image', width: 80, height: 50 },
+    { title: '备注', _width: 20, key: 'order_note' },
   ],
   // 成功提示
   notify(message = '保存', type = false) {

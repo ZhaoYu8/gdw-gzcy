@@ -17,10 +17,10 @@
             <td
               v-for="td in $common.tableHeader.slice(1, $common.tableHeader.length)"
               :key="td"
-              :style="{ width: td.width ? td.width + (typeof td.width === 'string' ? 'px' : '%') : '' }"
+              :style="{ width: td._width ? td._width + (typeof td._width === 'string' ? 'px' : '%') : '' }"
               class="w-s-n"
             >
-              {{ td.label }}
+              {{ td.title }}
             </td>
           </tr>
           <template v-for="(item, index) in tableData.slice(n, headerArr.length === 1 ? tableData.length : headerArr[i + 1])">
