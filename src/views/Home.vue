@@ -19,7 +19,7 @@
         <div>
           <el-button class="f-r mr-10" type="primary" @click="query">查询</el-button>
           <el-button class="f-r mr-10" type="success" @click="visible = true">预览</el-button>
-          <el-button type="primary" class="f-r mr-10" ref="daochu" @click="exports">导出</el-button>
+          <el-button type="primary" class="f-r" ref="daochu" @click="exports">导出</el-button>
         </div>
       </el-row>
     </el-card>
@@ -99,9 +99,18 @@ export default {
     async query() {
       let obj = {};
       if (this.customer_id) obj.customer_id = this.customer_id;
-      if (this.billing_date) obj.billing_date = moment(this.billing_date).format('YYYY-MM');
+      obj.billing_date = this.billing_date = moment(this.billing_date).format('YYYY-MM');
       let res = await this.$post('bills/list', obj);
-      this.tableData = res.data.data.products;
+      this.tableData = res.data.data.products.map((r) => {
+        return {
+          ...r,
+          ...{
+            product_num: Math.round(r.product_num * 100) / 100,
+            product_price: Math.round(r.product_price * 100) / 100,
+            product_amount: Math.round(r.product_amount * 100) / 100,
+          },
+        };
+      });
       this.tableHeaderData = res.data.data;
     },
     always(val) {
@@ -208,8 +217,8 @@ export default {
       tmpdata['A6'].s = {
         font: { sz: 14, vertAlign: true },
       };
-      tmpdata[`A${this.tableData.length + 8}`] = { v: `合计大写总金额: ${this.$common.ToString(this.sum)}` };
-      tmpdata[`G${this.tableData.length + 8}`] = { v: `合计小写: ${this.sum}` };
+      tmpdata[`A${this.tableData.length + 8}`] = { v: `合计大写总金额: ${this.$common.ToString(Math.round(this.sum * 100) / 100)}` };
+      tmpdata[`G${this.tableData.length + 8}`] = { v: `合计小写: ${Math.round(this.sum * 100) / 100}` };
       tmpdata[`A${this.tableData.length + 9}`] = {
         v: '注： 贵司（厂）若就此对账单存在异议，请立即与本司财务联系，若对此账单确认无误，请于三天内签字并盖章回传，否则以此单为准，谢谢合作！以上确认无误后，请贵司尽快付款。',
       };
