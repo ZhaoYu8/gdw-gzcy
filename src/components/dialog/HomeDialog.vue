@@ -37,8 +37,8 @@
             </tr>
           </template>
           <tr>
-            <td :colspan="parseInt(tableHeader.length / 2) + 1">合计大写总金额： {{ $common.ToString(sum) }}</td>
-            <td :colspan="tableHeader.length - parseInt(tableHeader.length / 2) - 1">合计小写： {{ sum }}</td>
+            <td :colspan="parseInt(tableHeader.length / 2) - 1">合计大写总金额： {{ $common.ToString(sum) }}</td>
+            <td :colspan="tableHeader.length - parseInt(tableHeader.length / 2)">合计小写： {{ sum }}</td>
           </tr>
         </table>
 

@@ -18,7 +18,7 @@
         </el-form>
         <div>
           <el-button type="success" @click="visible = true">预览</el-button>
-          <el-button type="info" ref="daochu" @click="exports">导出</el-button>
+          <el-button type="primary" ref="daochu" @click="exports">导出</el-button>
           <el-button type="warning" @click="headerVisible = true">表头设置</el-button>
           <el-button type="primary" @click="query">查询</el-button>
         </div>
@@ -70,7 +70,9 @@ export default {
   data() {
     return {
       customer_id: "",
-      billing_date: moment().format("YYYY-MM"),
+      billing_date: moment()
+        .subtract(1, "months")
+        .format("YYYY-MM"),
       custData: [],
       tableData: [],
       visible: false,
@@ -91,6 +93,9 @@ export default {
     },
     sum() {
       return this.tableData.map((r) => r.product_amount || 0).reduce((p, c) => p + c);
+    },
+    filterHeader() {
+      return this.tableHeader.filter((r) => !["product_img"].includes(r.symbol));
     }
   },
   methods: {
@@ -125,21 +130,20 @@ export default {
     },
     exports() {
       if (!this.tableData.length) {
-        this.$message.error("数据为空");
+        this.$message.error({
+          type: "error",
+          message: "数据列表是空！",
+          showClose: true
+        });
         return;
       }
       let arr = [];
       JSON.parse(JSON.stringify(this.tableData)).map((r, i) => {
         arr[i] = {};
-        this.tableHeader
-          .filter((r) => !["index", "product_img"].includes(r.symbol))
-          .map((n) => {
-            if (n.symbol === "product_field") {
-              arr[i][n.text] = r[n.symbol].length ? r[n.symbol].join("\n") : "";
-            } else {
-              arr[i][n.text] = r[n.symbol];
-            }
-          });
+
+        this.filterHeader.map((n) => {
+          arr[i][n.text] = n.symbol === "product_field" ? (r[n.symbol].length ? r[n.symbol].join("\n ") : "") : r[n.symbol] || "";
+        });
       });
       this.downloadExl(arr, {
         bookType: "xlsx",
@@ -158,23 +162,15 @@ export default {
         json[0][k] = k;
       }
       tmpdata = []; //用来保存转换好的json
-      let arr = json.map((v, i) => {
-        let data = keyMap.map((k, j) => {
+      let arr = json.map((v, i) =>
+        keyMap.map((k, j) => {
           return {
             v: v[k],
             position: this.getCharCol(j) + (i + 7)
           };
-        });
-        return data;
-      });
-      arr
-        .reduce((prev, next) => prev.concat(next))
-        .forEach(
-          (v, i) =>
-            (tmpdata[v.position] = {
-              v: v.v
-            })
-        );
+        })
+      );
+      arr.reduce((prev, next) => prev.concat(next)).map((v) => (tmpdata[v.position] = { v: v.v }));
       let outputPos = Object.keys(tmpdata); //设置区域,比如表格从A1到D10
       tmpdata["A1"] = { v: this.tableHeaderData.org.name };
       outputPos = ["A1"].concat(outputPos);
@@ -190,107 +186,97 @@ export default {
         font: { sz: 14, vertAlign: true },
         alignment: { vertical: "center", horizontal: "center", wrapText: true }
       };
+      let clen = this.filterHeader.length - 1;
+      let dlen = this.tableData.length;
+      let _date = this.getCharCol(parseInt(this.filterHeader.length / 2)) + (dlen + 8);
+      let _date2 = this.getCharCol(parseInt(this.filterHeader.length / 2)) + (dlen + 10);
+      // 合并单元格处理
       tmpdata["!merges"] = [
         {
           s: { c: 0, r: 0 },
-          e: { c: 8, r: 0 }
+          e: { c: clen, r: 0 }
         },
         {
           s: { c: 0, r: 1 },
-          e: { c: 8, r: 4 }
+          e: { c: clen, r: 4 }
         },
         {
           s: { c: 0, r: 5 },
-          e: { c: 8, r: 5 }
+          e: { c: clen, r: 5 }
         },
         {
-          s: { c: 0, r: this.tableData.length + 7 },
-          e: { c: 5, r: this.tableData.length + 7 }
+          s: { c: 0, r: dlen + 7 },
+          e: { c: parseInt(this.filterHeader.length / 2) - 1, r: dlen + 7 }
         },
         {
-          s: { c: 6, r: this.tableData.length + 7 },
-          e: { c: 8, r: this.tableData.length + 7 }
+          s: { c: parseInt(this.filterHeader.length / 2), r: dlen + 7 },
+          e: { c: clen, r: dlen + 7 }
         },
         {
-          s: { c: 0, r: this.tableData.length + 8 },
-          e: { c: 8, r: this.tableData.length + 8 }
+          s: { c: 0, r: dlen + 8 },
+          e: { c: clen, r: dlen + 8 }
         },
         {
-          s: { c: 0, r: this.tableData.length + 9 },
-          e: { c: 4, r: this.tableData.length + 10 }
+          s: { c: 0, r: dlen + 9 },
+          e: { c: parseInt(this.filterHeader.length / 2) - 1, r: dlen + 10 }
         },
         {
-          s: { c: 5, r: this.tableData.length + 9 },
-          e: { c: 8, r: this.tableData.length + 10 }
+          s: { c: parseInt(this.filterHeader.length / 2), r: dlen + 9 },
+          e: { c: clen, r: dlen + 10 }
         }
       ];
       tmpdata["A6"] = { v: `客户名称: ${this.custData.filter((r) => r.id === this.customer_id)[0].name}` };
       tmpdata["A6"].s = {
         font: { sz: 14, vertAlign: true }
       };
-      tmpdata[`A${this.tableData.length + 8}`] = { v: `合计大写总金额: ${this.$common.ToString(Math.round(this.sum * 100) / 100)}` };
-      tmpdata[`G${this.tableData.length + 8}`] = { v: `合计小写: ${Math.round(this.sum * 100) / 100}` };
-      tmpdata[`A${this.tableData.length + 9}`] = {
+      tmpdata[`A${dlen + 8}`] = { v: `合计大写总金额: ${this.$common.ToString(Math.round(this.sum * 100) / 100)}` };
+      tmpdata[_date] = { v: `合计小写: ${Math.round(this.sum * 100) / 100}` };
+      tmpdata[`A${dlen + 8}`].s = {};
+      tmpdata[_date].s = {};
+      tmpdata[`A${dlen + 9}`] = {
         v:
           "注： 贵司（厂）若就此对账单存在异议，请立即与本司财务联系，若对此账单确认无误，请于三天内签字并盖章回传，否则以此单为准，谢谢合作！以上确认无误后，请贵司尽快付款。"
       };
-
-      tmpdata[`A${this.tableData.length + 10}`] = { v: `确认签名: ` };
-
-      tmpdata[`F${this.tableData.length + 10}`] = { v: `日期:` };
-      tmpdata[`A${this.tableData.length + 10}`].s = {
+      tmpdata[`A${dlen + 9}`].s = {};
+      tmpdata[`A${dlen + 10}`] = { v: `确认签名: ` };
+      tmpdata[_date2] = { v: `日期:` };
+      //  s  设置xlsx单元格样式
+      tmpdata[`A${dlen + 10}`].s = {
         font: { sz: 14, vertAlign: true },
         alignment: { vertical: "center" }
-      }; //<====设置xlsx单元格样式
-      tmpdata[`F${this.tableData.length + 10}`].s = {
+      };
+      tmpdata[_date2].s = {
         font: { sz: 14, vertAlign: true },
         alignment: { vertical: "center" }
-      }; //<====设置xlsx单元格样式
-      Array.from({ length: this.tableHeader.length - 1 }, (v, k) => this.getCharCol(k)).map((r) => {
+      };
+      Array.from({ length: this.filterHeader.length }, (v, k) => this.getCharCol(k)).map((r) => {
         tmpdata[`${r}7`].s = {
           font: { sz: 14, bold: true, vertAlign: true },
           alignment: { vertical: "center", horizontal: "center" }
         };
-        [...new Array(this.tableData.length + 11).keys()].map((n) => {
+        [...new Array(dlen + 11).keys()].map((n) => {
           if (!tmpdata[`${r}${n + 1}`]) {
             tmpdata[`${r}${n + 1}`] = {};
           }
           if (!tmpdata[`${r}${n + 1}`].s) {
-            tmpdata[`${r}${n + 1}`].s = {};
+            // 统一处理 样式
+            tmpdata[`${r}${n + 1}`].s = {
+              alignment: { vertical: "center", horizontal: "center", wrapText: true }
+            };
           }
           tmpdata[`${r}${n + 1}`].s.border = {
-            top: { style: "thin", color: "FFFFAA00" },
-            left: { style: "thin", color: "FFFFAA00" },
-            right: { style: "thin", color: "FFFFAA00" },
-            bottom: { style: "thin", color: "FFFFAA00" }
+            top: { style: "thin", color: "000" },
+            left: { style: "thin", color: "000" },
+            right: { style: "thin", color: "000" },
+            bottom: { style: "thin", color: "000" }
           };
         });
       });
-      [...new Array(9).keys()].map((r) => {
-        tmpdata[`${String.fromCharCode(65 + r)}1`].s.border = {
-          top: { style: "thin", color: "FFFFAA00" },
-          left: { style: "thin", color: "FFFFAA00" },
-          right: { style: "thin", color: "FFFFAA00" }
-        };
-        tmpdata[`${String.fromCharCode(65 + r)}2`].s.border = {
-          left: { style: "thin", color: "FFFFAA00" },
-          right: { style: "thin", color: "FFFFAA00" },
-          bottom: { style: "thin", color: "FFFFAA00" }
+      tmpdata["!cols"] = this.filterHeader.map((r) => {
+        return {
+          wpx: this.getCellWidth(r) //<====设置一列宽度 根据长度 推算宽度
         };
       });
-      tmpdata["!cols"] = [
-        { wpx: 150 },
-        { wpx: 150 },
-        { wpx: 150 },
-        { wpx: 150 },
-        { wpx: 100 },
-        { wpx: 100 },
-        { wpx: 150 },
-        { wpx: 100 },
-        { wpx: 100 },
-        { wpx: 100 },
-        { wpx: 100 }
-      ]; //<====设置一列宽度
       let tmpWB = {
         SheetNames: ["mySheet"], //保存的表标题
         Sheets: {
@@ -298,7 +284,7 @@ export default {
             {},
             tmpdata, //内容
             {
-              "!ref": outputPos[0] + ":" + `I${this.tableData.length + 11}` //设置填充区域
+              "!ref": outputPos[0] + ":" + `${this.getCharCol(this.filterHeader.length)}${this.tableData.length + 11}` //设置填充区域
             }
           )
         }
@@ -321,6 +307,26 @@ export default {
         }
       );
       this.saveAs(tmpDown, `${this.billing_date}` + "." + (type.bookType == "biff2" ? "xls" : type.bookType));
+    },
+    // 计算最长的列宽 汉字二个字符 其他的一个字符
+    getCellWidth(data) {
+      if (["product_field"].includes(data.symbol)) {
+        return 150;
+      }
+      let arr = this.tableData
+        .map((r) => r[data.symbol])
+        .map(
+          (r) =>
+            (r || "")
+              .toString()
+              .split("")
+              .map((n) => (/.*[\u4e00-\u9fa5]+.*$/.test(n) ? 2 : 1))
+              .reduce((l, s) => l + s, 0) * 20
+        );
+      let len = Math.min.apply(Math, arr);
+      if (len < 100) return 100;
+      if (len > 200) return 200;
+      return len;
     },
     // 下载功能
     saveAs(obj, fileName) {
