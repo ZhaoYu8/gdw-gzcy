@@ -2,7 +2,7 @@
   <el-dialog title="表头设置" :visible.sync="visible" width="90%" top="100px" @close="close">
     <el-row :gutter="10">
       <el-col :span="12" class="set">
-        <div class="set-header">剩余选中</div>
+        <div class="set-header">待选择</div>
         <draggable class="set-box" tag="ul" v-model="allTableHeader" v-bind="dragOptions" @start="drag = true" @end="drag = false">
           <li class="set-box-li" v-for="element in allTableHeader" :key="element.id">
             {{ element.name }}
@@ -10,7 +10,7 @@
         </draggable>
       </el-col>
       <el-col :span="12" class="set">
-        <div class="set-header">已选中</div>
+        <div class="set-header">已选中（{{ selected.length }}）</div>
         <draggable class="set-box" tag="ul" v-model="selected" v-bind="dragOptions" @start="drag = true" @end="drag = false">
           <li v-for="element in selected" :key="element.id" class="set-box-li">
             {{ element.name }}

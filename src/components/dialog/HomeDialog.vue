@@ -10,7 +10,7 @@
         </header>
         <table border="1" cellspacing="0" class="table">
           <tr>
-            <td colspan="10">客户名称： {{ tableHeaderData.customer_name }}</td>
+            <td :colspan="tableHeader.length">客户名称： {{ tableHeaderData.customer_name }}</td>
           </tr>
           <tr style="font-weight: bold;" class="header-tr">
             <td v-for="row in tableHeader" :key="row.text" class="w-s-n">
@@ -37,24 +37,21 @@
             </tr>
           </template>
           <tr>
-            <td colspan="6">合计大写总金额： {{ $common.ToString(sum) }}</td>
-            <td colspan="4">合计小写： {{ sum }}</td>
-          </tr>
-          <tr>
-            <td colspan="10">
-              注：
-              贵司（厂）若就此对账单存在异议，请立即与本司财务联系，若对此账单确认无误，请于三天内签字并盖章回传，否则以此单为准，谢谢合作！以上确认无误后，请贵司尽快付款。
-            </td>
-          </tr>
-          <tr>
-            <td colspan="5" style="height: 50px">
-              确认签名：
-            </td>
-            <td colspan="5">
-              日期：
-            </td>
+            <td :colspan="parseInt(tableHeader.length / 2) + 1">合计大写总金额： {{ $common.ToString(sum) }}</td>
+            <td :colspan="tableHeader.length - parseInt(tableHeader.length / 2) - 1">合计小写： {{ sum }}</td>
           </tr>
         </table>
+
+        <el-row class="tail">
+          <el-col :span="24">
+            注：
+            贵司（厂）若就此对账单存在异议，请立即与本司财务联系，若对此账单确认无误，请于三天内签字并盖章回传，否则以此单为准，谢谢合作！以上确认无误后，请贵司尽快付款。
+          </el-col>
+        </el-row>
+        <el-row class="tail">
+          <el-col :span="12" class="tail-first">确认签名：</el-col>
+          <el-col :span="12"> 日期：</el-col>
+        </el-row>
       </div>
     </div>
     <el-backtop target=".el-dialog__wrapper"></el-backtop>
@@ -144,6 +141,18 @@ export default {
           white-space: nowrap;
         }
       }
+    }
+  }
+  .tail {
+    height: 50px;
+    line-height: 50px;
+    border: 1px solid #000;
+    border-top: 0;
+    &-first {
+      border-right: 1px solid #000;
+    }
+    * {
+      padding-left: 5px;
     }
   }
 }
